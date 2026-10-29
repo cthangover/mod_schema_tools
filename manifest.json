@@ -12,8 +12,7 @@
     "tests/*.cs"
   ],
   "depends": [
-    "editor_tools>=1",
-    "dialog_base>=1",
+    "tools_base>=1",
     "ui_base>=1",
     "schema_base>=1"
   ],

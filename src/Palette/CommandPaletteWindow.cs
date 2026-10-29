@@ -5,7 +5,7 @@ namespace Cthangover.Tools.Schemas
     using System.Collections.Generic;
     using System.Linq;
     using Cthangover.Core.UI.Theming;
-    using Cthangover.Core.UI.Tool.ScenarioEditor;
+    using Cthangover.Tools.Contracts;
     using Cthangover.Mods.Interface.Theming;
     using Cthangover.Mods.Interface.Tool;
     using Cthangover.Tools.Common;
@@ -70,17 +70,14 @@ namespace Cthangover.Tools.Schemas
         /// <summary>Inserts <see cref="Line"/> below the caret of the open scenario editor; false when none is open.</summary>
         public bool InsertIntoEditor()
         {
-            var tabs = GetTree()?.Root.FindChildren("*", "", true, false).OfType<ScenarioEditTabs>().FirstOrDefault(t => t.HasActiveFile);
-            if (tabs == null || string.IsNullOrEmpty(Line))
+            var target = ScenarioTextTargets.Current;
+            if (target == null || string.IsNullOrEmpty(Line))
             {
                 SetStatus(ToolUi.Tr("tools/schema/palette/no_editor"), ToolStatusKind.Error);
                 return false;
             }
-            var code = tabs.CodeEditor;
-            var at = Math.Min(code.GetCaretLine() + 1, code.GetLineCount());
-            code.InsertLineAt(at, Line);
-            code.SetCaretLine(at);
-            SetStatus(string.Format(ToolUi.Tr("tools/schema/palette/inserted"), tabs.CurrentKey), ToolStatusKind.Ok);
+            target.InsertLine(Line);
+            SetStatus(string.Format(ToolUi.Tr("tools/schema/palette/inserted"), target.DocumentKey), ToolStatusKind.Ok);
             return true;
         }
 
