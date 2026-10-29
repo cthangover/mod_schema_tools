@@ -3,7 +3,7 @@
   "name": "Schema Tools",
   "version": "1.0.0",
   "author": "ct",
-  "description": "The authoring tools over the schemas of schema_base: the Data Editor window edits any described entity kind with forms built from the merged fields of all mods (entity pickers, formula fields, lists of traits, stat maps, texts in every language), and the command palette builds scenario lines from action and command schemas, checks them and inserts them into the scenario editor. The schemas themselves live with the mods that own the actions and kinds.",
+  "description": "The Data Editor window and the command palette: edit any described entity in a form and assemble checked scenario lines from the mods' schemas.",
   "category": "tools, editor",
   "sources": [
     "src/**/*.cs"
