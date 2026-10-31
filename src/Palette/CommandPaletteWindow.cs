@@ -203,8 +203,28 @@ namespace Cthangover.Tools.Schemas
                 preview.Text = string.Empty;
                 issues = new List<SchemaIssue>();
             }
+            foreach (var control in controls.Where(c => c.Type == "flag"))
+                issues.AddRange(FlagIssues(control.Value));
             issuesLabel.Text = issues.Count == 0 ? (preview.Text.Length > 0 ? ToolUi.Tr("tools/schema/palette/line_ok") : string.Empty) : string.Join("\n", issues.Select(i => (i.IsError ? "✖ " : "⚠ ") + i.Message));
             issuesLabel.AddThemeColorOverride("font_color", issues.Any(i => i.IsError) ? UiTokens.DangerText : issues.Count > 0 ? UiTokens.Warning : UiTokens.SuccessText);
+        }
+
+        /// <summary>
+        /// A flag value is a name, optionally with the <c>self.</c> scope (the flag of the object the dialog
+        /// runs for, <c>DialogQueue.Scope</c>): <c>self.</c> alone has no name, and a name is letters, digits
+        /// and underscores. Nothing else about a flag is checked: flags are created by the first <c>flag</c>.
+        /// </summary>
+        private static List<SchemaIssue> FlagIssues(string value)
+        {
+            var issues = new List<SchemaIssue>();
+            if (string.IsNullOrEmpty(value))
+                return issues;
+            var name = value.StartsWith("self.", StringComparison.Ordinal) ? value.Substring("self.".Length) : value;
+            if (name.Length == 0)
+                issues.Add(new SchemaIssue(true, "PALETTE_FLAG", ToolUi.Tr("tools/schema/palette/flag_empty")));
+            else if (!name.All(c => char.IsLetterOrDigit(c) || c == '_'))
+                issues.Add(new SchemaIssue(true, "PALETTE_FLAG", string.Format(ToolUi.Tr("tools/schema/palette/flag_bad"), name)));
+            return issues;
         }
 
         private void OnInsertPressed() => InsertIntoEditor();

@@ -22,7 +22,7 @@ El formulario reúne los campos de varios mods en uno: Id, nombre, descripción,
 
 La barra: **Nueva** (Ctrl+N) añade una entrada con los valores por defecto del esquema, **Copia** (Ctrl+D) duplica la elegida, **Borrar** pregunta antes, **Deshacer**/**Rehacer** (Ctrl+Z / Ctrl+Y o Ctrl+Shift+Z) recorren los cambios, **Guardar** (Ctrl+S) escribe solo los archivos modificados, con saltos de línea LF. Justo después de guardar, el juego en marcha ve el cambio: un objeto nuevo se puede dar y equipar sin reiniciar.
 
-En la lista de arriba solo hay mods en los que se puede escribir. Las entradas de un mod son las de sus propios archivos; para cambiar la entidad de otro mod, edítala en ese mod.
+En la lista aparecen las entradas del mod elegido y, si se marca **Entries of other mods**, las de sus dependencias, marcadas `↗ dueño`. Editar una de ellas escribe un parche en el mod elegido (`patches/<tipo>/<mod>.json`) solo con los valores cambiados; el archivo del dueño queda idéntico byte a byte. **Reset to inherited** quita el parche, y **↺** junto a un campo quita su valor.
 
 ## La paleta de comandos
 
@@ -37,6 +37,8 @@ La línea se comprueba mientras escribes, con las mismas reglas que el Validator
 **Insertar** coloca la línea en el escenario abierto en el editor de escenarios, bajo el cursor; **Copiar** la pone en el portapapeles. El escenario de la vidente de RPG Plus tras insertar:
 
 ![El editor de escenarios con seer.scenario marcado como modificado (seer *): la línea 2 es ahora «action stat.add stat=str value=2», entre el saludo de la vidente y la prueba de suerte.](assets/scenario-inserted.jpg)
+
+Un campo `flag` tiene una casilla **self.**: marcada, la línea escribe el flag del objeto cuyo diálogo se ejecuta (`flag self.picked 1`). Un `self.` sin nombre se muestra bajo la línea como error; **Insertar** no se detiene por ello, así que corrija antes el nombre.
 
 No se escribe nada en disco hasta que el autor pulse **Guardar** en el editor de escenarios. El texto del escenario sigue siendo la fuente de la verdad: la paleta solo ayuda a escribirlo.
 

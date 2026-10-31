@@ -22,7 +22,7 @@ The form gathers the fields of several mods into one: Id, name, description, cos
 
 The toolbar: **New** (Ctrl+N) adds an entry with the schema's defaults, **Copy** (Ctrl+D) duplicates the selected one, **Delete** asks first, **Undo**/**Redo** (Ctrl+Z / Ctrl+Y or Ctrl+Shift+Z) step through the changes, **Save** (Ctrl+S) writes only the changed files, with LF line endings. Right after Save the running game sees the change: a new item can be given and worn without a restart.
 
-Only mods that can be written to are in the list at the top. The entries of a mod are the ones in its own files; to change another mod's entity, edit it in that mod.
+Only mods that can be written to are in the list at the top. The list shows the entries of the chosen mod and, with **Entries of other mods** ticked, the entries of its dependencies, marked `↗ owner`. Editing one of those writes a patch in the chosen mod (`patches/<kind>/<mod>.json`) with only the values you changed; the owner's file stays byte for byte the same. **Reset to inherited** removes the patch, and **↺** next to a field removes your value of that field.
 
 ## The command palette
 
@@ -37,6 +37,8 @@ The line is checked as you type, with the same rules as the Validator. A misspel
 **Insert** puts the line into the scenario open in the scenario editor, below the caret; **Copy** puts it on the clipboard. The seer's scenario of RPG Plus after Insert:
 
 ![The scenario editor with seer.scenario marked as changed (seer *): line 2 is now "action stat.add stat=str value=2", between the seer's greeting and the luck check.](assets/scenario-inserted.jpg)
+
+A flag field has a **self.** check box: ticked, the line writes the flag of the object whose dialog is running (`flag self.picked 1`). A bare `self.` with no name is shown as an error under the line. **Insert** does not stop on it, so fix the name first.
 
 Nothing is written to disk until the author presses **Save** in the scenario editor. The scenario text stays the source of truth: the palette only helps to write it.
 
