@@ -22,7 +22,7 @@ Biểu mẫu gom trường của nhiều mod vào một: Id, tên, mô tả, gi�
 
 Thanh công cụ: **Mới** (Ctrl+N) thêm một mục với giá trị mặc định của lược đồ, **Sao chép** (Ctrl+D) nhân bản mục đang chọn, **Xóa** hỏi trước, **Hoàn tác**/**Làm lại** (Ctrl+Z / Ctrl+Y hoặc Ctrl+Shift+Z) đi qua các thay đổi, **Lưu** (Ctrl+S) chỉ ghi những tệp đã đổi, với kết thúc dòng LF. Ngay sau khi lưu, game đang chạy thấy thay đổi: một vật phẩm mới có thể được trao và mặc mà không cần khởi động lại.
 
-Danh sách trên cùng chỉ có những mod ghi được. Các mục của một mod là những mục trong tệp của chính nó; muốn đổi thực thể của mod khác, hãy sửa nó trong mod đó.
+Danh sách hiển thị các mục của mod đã chọn và, nếu đánh dấu **Entries of other mods**, các mục của các mod phụ thuộc, có ghi `↗ chủ sở hữu`. Sửa một mục như vậy sẽ ghi một bản vá vào mod đã chọn (`patches/<loại>/<mod>.json`) chỉ với các giá trị đã đổi; tệp của chủ sở hữu giữ nguyên từng byte. **Reset to inherited** xóa bản vá, còn **↺** cạnh một trường xóa giá trị của bạn ở trường đó.
 
 ## Bảng lệnh
 
@@ -37,6 +37,8 @@ Dòng được kiểm tra ngay khi bạn gõ, theo đúng luật của Validator
 **Chèn** đặt dòng vào kịch bản đang mở trong trình sửa kịch bản, dưới con trỏ; **Sao chép** đưa nó vào bộ nhớ tạm. Kịch bản của nữ tiên tri trong RPG Plus sau khi chèn:
 
 ![Trình sửa kịch bản với seer.scenario được đánh dấu đã sửa (seer *): dòng 2 giờ là "action stat.add stat=str value=2", nằm giữa lời chào của nữ tiên tri và phép kiểm vận may.](assets/scenario-inserted.jpg)
+
+Trường `flag` có một ô **self.**: khi đánh dấu, dòng lệnh ghi cờ của đối tượng đang chạy hội thoại (`flag self.picked 1`). Một `self.` trơ không có tên được hiển thị dưới dòng như lỗi; **Chèn** không dừng lại vì điều đó, nên hãy sửa tên trước.
 
 Không có gì được ghi xuống đĩa cho tới khi tác giả nhấn **Lưu** trong trình sửa kịch bản. Văn bản kịch bản vẫn là nguồn sự thật duy nhất: bảng lệnh chỉ giúp viết nó.
 

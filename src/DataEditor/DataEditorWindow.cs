@@ -38,7 +38,11 @@ namespace Cthangover.Tools.Schemas
     {
         private readonly List<string> mods = new();
         private readonly List<ISchemaFieldEditor> editors = new();
-        private readonly List<LocaleFieldEditor> localeEditors = new();
+        private readonly List<ITextFieldEditor> localeEditors = new();
+        private readonly EntityRename rename = new();
+        private HashSet<string> savedIds = new(StringComparer.OrdinalIgnoreCase);
+        private Button renameButton;
+        private Button undoRenameButton;
         private OptionButton modPicker;
         private FilteredList kindList;
         private FilteredList entityList;
@@ -48,6 +52,10 @@ namespace Cthangover.Tools.Schemas
         private LineEdit idEdit;
         private CodeEdit otherEdit;
         private Label emptyHint;
+        private Button resetEntity;
+        private readonly Dictionary<string, FieldOriginBadge> badges = new(StringComparer.OrdinalIgnoreCase);
+        private HashSet<string> dependencies = new(StringComparer.OrdinalIgnoreCase);
+        private EntityExplanation explanation;
         private KindSchema kind;
         private EntityDocument document;
         private EntityRecord selected;
@@ -93,7 +101,7 @@ namespace Cthangover.Tools.Schemas
         /// <summary>Selects an entity by id (null: none).</summary>
         public void Select(string id)
         {
-            selected = id == null ? null : document?.Find(id);
+            selected = id == null ? null : document?.FindAny(id);
             entityList.Select(selected?.Id);
             ShowSelected();
         }
@@ -122,6 +130,9 @@ namespace Cthangover.Tools.Schemas
             toolbar.AddChild(ToolUi.Divider());
             toolbar.AddChild(ToolUi.Button("tools/entity_editor/undo", Undo, ButtonKind.Secondary, "tools/entity_editor/undo_tip"));
             toolbar.AddChild(ToolUi.Button("tools/entity_editor/redo", Redo, ButtonKind.Secondary, "tools/entity_editor/redo_tip"));
+            undoRenameButton = ToolUi.Button("tools/rename/undo", UndoRename, ButtonKind.Secondary, "tools/rename/undo_tip");
+            undoRenameButton.Disabled = true;
+            toolbar.AddChild(undoRenameButton);
             outer.AddChild(toolbar);
 
             var main = new HSplitContainer { SizeFlagsHorizontal = Control.SizeFlags.ExpandFill, SizeFlagsVertical = Control.SizeFlags.ExpandFill };
@@ -196,7 +207,13 @@ namespace Cthangover.Tools.Schemas
             document = EntityDocument.Load(kind.Kind, $"{Folder()}/{mod}.json", sources, out var skipped);
             if (skipped.Count > 0)
                 SetStatus(string.Format(ToolUi.Tr("tools/entity_editor/broken_files"), string.Join(", ", skipped)), ToolStatusKind.Error);
+            // Entities of the mod's dependencies join as patch candidates (see EntityEditorWindow).
+            var patchFile = ForeignEntities.PatchFile(kind.Kind, mod);
+            dependencies = ForeignEntities.Dependencies(mod);
+            document.AttachForeign(patchFile, ModFileService.ReadText(mod, patchFile), ForeignEntities.TypeOf(kind.Kind),
+                ForeignEntities.Scan(kind.Kind, mod), id => ForeignEntities.BaseWithout(kind.Kind, id, mod, patchFile));
             languages = LocaleFileService.Languages(mod);
+            savedIds = new HashSet<string>(document.Records.Select(r => r.Id), StringComparer.OrdinalIgnoreCase);
             BuildForm();
             MarkClean();
             editing = false;
@@ -220,16 +237,28 @@ namespace Cthangover.Tools.Schemas
         private void RefreshList()
         {
             var name = editors.OfType<LocaleFieldEditor>().FirstOrDefault();
-            entityList.SetItems(document.Records.Select(r => (r.Id, RowText(r, name), (Texture2D)null)));
+            var rows = document.Records.Select(r => (r.Id, RowText(r, name), (Texture2D)null))
+                .Concat(document.Foreign.Select(r => (r.Id, ForeignRowText(r, name), (Texture2D)null)));
+            entityList.SetItems(rows.ToList());
             entityList.Select(selected?.Id);
         }
 
         private string RowText(EntityRecord record, LocaleFieldEditor nameField)
         {
-            var key = nameField == null ? null : record.Data[nameField.Field.Key]?.ToString();
+            var key = nameField == null || record.Data == null ? null : record.Data[nameField.Field.Key]?.ToString();
             var language = languages.FirstOrDefault() ?? "ru";
             var text = key == null ? null : document.GetText(language, key) ?? LocaleFileService.Read(modId, language, key);
             return string.IsNullOrWhiteSpace(text) ? record.Id : $"{text}  ·  {record.Id}";
+        }
+
+        /// <summary>A foreign entity's row: its name (the owner's text), its id, the mark of the own patch and the owner.</summary>
+        private string ForeignRowText(EntityRecord record, LocaleFieldEditor nameField)
+        {
+            var key = nameField == null || record.Data == null ? null : record.Data[nameField.Field.Key]?.ToString();
+            var language = languages.FirstOrDefault() ?? "ru";
+            var text = key == null ? null : document.GetText(language, key) ?? LocaleFileService.Read(record.OwnerMod, language, key);
+            var mark = document.IsDeleted(record) ? "✕ " : document.PatchOf(record.Id) != null ? "✎ " : string.Empty;
+            return mark + (string.IsNullOrWhiteSpace(text) ? record.Id : $"{text}  ·  {record.Id}") + "  ↗ " + record.OwnerMod;
         }
 
         // ── form ───────────────────────────────────────────────────
@@ -245,11 +274,22 @@ namespace Cthangover.Tools.Schemas
             localeEditors.Clear();
             fileLabel = ToolUi.Hint(string.Empty);
             form.AddChild(fileLabel);
+            resetEntity = ToolUi.Button("tools/entity_editor/reset", ResetEntity, ButtonKind.Secondary, "tools/entity_editor/reset_tip");
+            form.AddChild(resetEntity);
+            badges.Clear();
             idEdit = ToolUi.Field(form, "tools/entity_editor/id", ToolUi.Text(string.Empty, OnTyped), "tools/entity_editor/id_tip");
             idEdit.Name = "Id";
             idEdit.AddThemeFontOverride("font", ToolUi.Mono());
+            // A saved id changes only through the rename: it rewrites the references (plan 14.G6).
+            renameButton = ToolUi.Button("tools/rename/rename", Rename, ButtonKind.Secondary, "tools/rename/rename_tip");
+            renameButton.Name = "Rename";
+            renameButton.Visible = false;
+            form.AddChild(renameButton);
             foreach (var field in kind.Fields.Where(f => !string.Equals(f.Key, "Id", StringComparison.OrdinalIgnoreCase)))
+            {
                 editors.Add(CreateEditor(field));
+                AddBadge(field.Key);
+            }
             foreach (var locale in localeEditors)
                 locale.Open(document, modId, languages);
 
@@ -262,28 +302,89 @@ namespace Cthangover.Tools.Schemas
             form.AddChild(otherEdit);
         }
 
+        private void AddBadge(string key)
+        {
+            var badge = new FieldOriginBadge(key, ResetField);
+            form.AddChild(badge);
+            badges[key] = badge;
+        }
+
         private ISchemaFieldEditor CreateEditor(FieldSchema field)
         {
             var editor = SchemaFieldEditors.Create(form, field, WriteForm);
-            if (editor is LocaleFieldEditor locale)
-                localeEditors.Add(locale);
+            if (editor is ITextFieldEditor text)
+                localeEditors.Add(text);
             return editor;
         }
 
         private void ShowSelected()
         {
+            if (selected != null && selected.IsForeign && selected.Data == null)
+            {
+                SetStatus(string.Format(ToolUi.Tr("tools/entity_editor/foreign_unresolved"), selected.Id), ToolStatusKind.Error);
+                selected = null;
+            }
             emptyHint.Visible = selected == null;
             form.Visible = selected != null;
+            explanation = selected == null ? null : ForeignEntities.Explain(kind.Kind, selected.Id);
             if (selected == null)
                 return;
             suppress = true;
-            fileLabel.Text = string.Format(ToolUi.Tr("tools/entity_editor/file"), modId, selected.File);
+            fileLabel.Text = selected.IsForeign
+                ? string.Format(ToolUi.Tr("tools/entity_editor/foreign_file"), selected.OwnerMod, selected.File, modId, document.PatchFile)
+                : string.Format(ToolUi.Tr("tools/entity_editor/file"), modId, selected.File);
             idEdit.Text = selected.Id;
+            // A saved own id changes only through the rename (it rewrites the references); a new one is typed in the field.
+            var saved = !selected.IsForeign && savedIds.Contains(selected.Id);
+            idEdit.Editable = !selected.IsForeign && !saved;
+            renameButton.Visible = saved;
+            resetEntity.Visible = selected.IsForeign && document.PatchOf(selected.Id) != null;
+            foreach (var text in editors.OfType<ITextFieldEditor>())
+                text.SetEntityId(selected.Id);
             foreach (var editor in editors)
                 editor.Load(Find(selected.Data, editor.Field.Key));
             otherEdit.Text = OtherJson(selected.Data);
             suppress = false;
             editing = false;
+            RefreshBadges();
+        }
+
+        private void RefreshBadges()
+        {
+            foreach (var pair in badges)
+            {
+                if (selected == null)
+                {
+                    pair.Value.Show(null, false, false);
+                    continue;
+                }
+                var text = FieldOrigins.Describe(selected, modId, document, explanation, dependencies, pair.Key, out var warning, out var canReset);
+                pair.Value.Show(text, warning, canReset);
+            }
+        }
+
+        private void ResetField(string key)
+        {
+            if (selected == null)
+                return;
+            document.BeginChange();
+            document.ResetField(selected, key);
+            SetDirty();
+            RefreshList();
+            ShowSelected();
+            SetStatus(string.Format(ToolUi.Tr("tools/entity_editor/reset_field_done"), key, selected.Id));
+        }
+
+        private void ResetEntity()
+        {
+            if (selected == null || !selected.IsForeign)
+                return;
+            document.BeginChange();
+            document.ResetForeign(selected);
+            SetDirty();
+            RefreshList();
+            ShowSelected();
+            SetStatus(string.Format(ToolUi.Tr("tools/entity_editor/reset_done"), selected.Id));
         }
 
         private static JsonNode Find(JsonObject data, string key)
@@ -311,8 +412,12 @@ namespace Cthangover.Tools.Schemas
                 else
                     data[existing] = value;
             }
+            if (selected.IsForeign)
+                document.CommitForeign(selected);
             SetDirty();
             RefreshList();
+            RefreshBadges();
+            resetEntity.Visible = selected.IsForeign && document.PatchOf(selected.Id) != null;
         }
 
         private bool IsFormKey(string key)
@@ -352,6 +457,8 @@ namespace Cthangover.Tools.Schemas
                 data.Remove(key);
             foreach (var pair in other.Where(p => !IsFormKey(p.Key)).ToList())
                 data[pair.Key] = pair.Value?.DeepClone();
+            if (selected.IsForeign)
+                document.CommitForeign(selected);
             SetDirty();
         }
 
@@ -368,9 +475,11 @@ namespace Cthangover.Tools.Schemas
             var entity = new JsonObject { ["Id"] = id };
             foreach (var field in kind.Fields.Where(f => !string.IsNullOrEmpty(f.Default)))
                 entity[field.Key] = SchemaJson.ToNode(field, field.Default);
+            // {id} is the last segment of the id: "rpg_plus/amber" makes "rpg_plus/item/amber/name", as the game's own texts do.
+            var shortId = id.Substring(id.LastIndexOf('/') + 1);
             foreach (var field in kind.Fields.Where(f => f.Type == "locale" && !string.IsNullOrEmpty(f.KeyPattern)))
             {
-                var key = field.KeyPattern.Replace("{mod}", modId).Replace("{id}", id).Replace("{key}", field.Key.ToLowerInvariant());
+                var key = field.KeyPattern.Replace("{mod}", modId).Replace("{id}", shortId).Replace("{key}", field.Key.ToLowerInvariant());
                 entity[field.Key] = key;
                 foreach (var language in languages)
                     document.SetText(language, key, field.Key == "Name" ? id.Substring(id.LastIndexOf('/') + 1) : string.Empty);
@@ -388,11 +497,27 @@ namespace Cthangover.Tools.Schemas
             if (selected == null)
                 return;
             document.BeginChange();
-            var record = document.Duplicate(selected, document.FreeId(selected.Id));
+            // A foreign entity is copied into the edited mod under a free id: an own entity to change freely.
+            var record = selected.IsForeign
+                ? document.Add(CopyWithId(selected.Data, document.FreeId(selected.Id)))
+                : document.Duplicate(selected, document.FreeId(selected.Id));
             SetDirty();
             selected = record;
             RefreshList();
             Select(record.Id);
+        }
+
+        private static JsonObject CopyWithId(JsonObject data, string id)
+        {
+            var copy = (JsonObject)data.DeepClone();
+            copy.Remove("Id");
+            var result = new JsonObject { ["Id"] = id };
+            foreach (var pair in copy.ToList())
+            {
+                copy.Remove(pair.Key);
+                result[pair.Key] = pair.Value;
+            }
+            return result;
         }
 
         private void DeleteSelected()
@@ -407,7 +532,10 @@ namespace Cthangover.Tools.Schemas
             if (selected == null)
                 return;
             document.BeginChange();
-            document.Remove(selected);
+            if (selected.IsForeign)
+                document.DeleteForeign(selected);
+            else
+                document.Remove(selected);
             selected = null;
             SetDirty();
             RefreshList();
@@ -425,7 +553,49 @@ namespace Cthangover.Tools.Schemas
             var id = selected?.Id;
             SetDirty();
             RefreshList();
-            Select(document.Find(id)?.Id ?? document.Records.FirstOrDefault()?.Id);
+            Select(document.FindAny(id)?.Id ?? document.Records.FirstOrDefault()?.Id);
+        }
+
+        /// <summary>"Rename…" of the selected saved entity: the dialog lists the references before anything is written (plan 14.G6).</summary>
+        public void Rename()
+        {
+            if (selected == null || selected.IsForeign || document == null || kind == null)
+                return;
+            var oldId = selected.Id;
+            var kindId = kind.Kind;
+            var dialog = new EntityRenameDialog(
+                oldId,
+                newId => EntityRename.Problem(kindId, newId, id => document.FindAny(id) != null),
+                newId => EntityRename.Plan(kindId, modId, oldId, newId),
+                newId => RenameTo(oldId, newId));
+            AddChild(dialog);
+            dialog.PopupCentered();
+        }
+
+        /// <summary>Applies the rename (the window saves first) and shows the renamed entity; null on success, else the error's locale key.</summary>
+        private string RenameTo(string oldId, string newId)
+        {
+            var error = rename.Apply(kind.Kind, modId, oldId, newId, Save, out var files);
+            if (error != null)
+            {
+                SetStatus(ToolUi.Tr(error), ToolStatusKind.Error);
+                return error;
+            }
+            undoRenameButton.Disabled = false;
+            DoOpen(kind.Kind, modId);
+            Select(newId);
+            SetStatus(string.Format(ToolUi.Tr("tools/rename/done"), oldId, newId, files), ToolStatusKind.Ok);
+            return null;
+        }
+
+        private void UndoRename()
+        {
+            var files = rename.Undo();
+            undoRenameButton.Disabled = true;
+            if (files == 0 || kind == null)
+                return;
+            DoOpen(kind.Kind, modId);
+            SetStatus(string.Format(ToolUi.Tr("tools/rename/undone"), files), ToolStatusKind.Ok);
         }
 
         /// <inheritdoc />
@@ -457,11 +627,24 @@ namespace Cthangover.Tools.Schemas
                     return false;
                 }
             }
+            var patch = document.ChangedPatch();
+            if (patch != null)
+            {
+                var (patchPath, patchText) = patch.Value;
+                var written = patchText == null ? ModFileService.DeleteFile(modId, patchPath) : ModFileService.WriteText(modId, patchPath, patchText);
+                if (!written)
+                {
+                    SetStatus(ToolUi.Tr("tools/common/readonly"), ToolStatusKind.Error);
+                    return false;
+                }
+            }
             foreach (var (language, key, value) in changedTexts)
                 LocaleFileService.Write(modId, language, key, value);
             document.MarkSaved();
             MarkClean();
             editing = false;
+            savedIds.UnionWith(document.Records.Select(r => r.Id));
+            ModManager.Instance.GetResolver<PatchResolver>()?.ClearCache();
             ModManager.Instance.GetResolver<EntityResolver>()?.ClearCache();
             ModManager.Instance.GetResolver<FileListResolver>()?.ClearCache();
             GameEntityIndex.Refresh();
@@ -469,6 +652,7 @@ namespace Cthangover.Tools.Schemas
                 LocaleFileService.ReloadGame();
             GameLogger.Log("TOOLS", $"data editor: saved {changedFiles.Count} {kind.Kind} file(s), {changedTexts.Count} text(s) of '{modId}'");
             SetStatus(string.Format(ToolUi.Tr("tools/entity_editor/saved"), changedFiles.Count, changedTexts.Count, modId), ToolStatusKind.Ok);
+            Select(selected?.Id);
             FillKinds();
             kindList.Select(kind.Kind);
             return true;
