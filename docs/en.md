@@ -16,11 +16,14 @@ Pick a mod at the top, a kind of data on the left and an entry in the middle; th
 The form gathers the fields of several mods into one: Id, name, description, cost, picture, item types and item action are described by Items Engine; **Equip type**, the **Traits** list (a stat, an amount) and the classes allowed to wear it are added by Equipment. A kind that two mods describe is still one form.
 
 - **Texts** (`Name`, `Description`) are shown as their translation key and a line per language of the mod; they are written into the mod's own locale files.
-- **References** (a stat, an item, a class) are lists of the ids the game knows.
+- **References** (a stat, an item, a class) are lists of the ids the game knows. **Equip type** is a picker of the types the equipment slots accept; it is not typed.
+- **Quests, skills and statuses** are kinds too (schemas of `quests_base`, `skills_base`, `turn_battle_base`). A quest's **Steps** are rows of a step number and its text in every language of the mod; a skill's type, rarity and granted action card, and a status's kind and behaviour, are pickers.
 - **Lists** such as traits have a card per element with its own fields.
 - Properties no schema describes are kept and shown under other fields as JSON.
 
 The toolbar: **New** (Ctrl+N) adds an entry with the schema's defaults, **Copy** (Ctrl+D) duplicates the selected one, **Delete** asks first, **Undo**/**Redo** (Ctrl+Z / Ctrl+Y or Ctrl+Shift+Z) step through the changes, **Save** (Ctrl+S) writes only the changed files, with LF line endings. Right after Save the running game sees the change: a new item can be given and worn without a restart.
+
+**Rename…** under the Id of a saved entry changes its id and the references to it in the chosen mod. The window lists the files that will change, and the files of other mods that name the id (those are only listed), before anything is written. **Undo rename** in the toolbar puts the files back as they were. The same rename works in the item and character editors.
 
 Only mods that can be written to are in the list at the top. The list shows the entries of the chosen mod and, with **Entries of other mods** ticked, the entries of its dependencies, marked `↗ owner`. Editing one of those writes a patch in the chosen mod (`patches/<kind>/<mod>.json`) with only the values you changed; the owner's file stays byte for byte the same. **Reset to inherited** removes the patch, and **↺** next to a field removes your value of that field.
 
