@@ -13,6 +13,8 @@ Elige un mod arriba, un tipo de datos a la izquierda y una entrada en el centro;
 
 ![El Editor de datos: mod classic_rpg_pack, a la izquierda los tipos (rpg_tileset 10, Stats 11, Archetypes 3, Equipment slots 3, Items 20, Characters 5, Battle actions 7, Shops 1, Crafting station 1, Recipe 3), en el centro sus nueve objetos con Iron sword seleccionado, y a la derecha el formulario: Id, Name y Description con un texto en cada uno de los siete idiomas, Cost 30, Picture, Item types TargetUsed, Item action action/equip, Equip type sword y un rasgo sobre el atributo Attack.](assets/data-editor-item.jpg)
 
+La imagen del editor es de una captura anterior: las claves `rpg_demo/` o la paleta `rpg_tileset` que aparecen son históricas. Usa las claves actuales `rpg_plus/` y el modelo `rpg_object` descritos en el texto.
+
 El formulario reúne los campos de varios mods en uno: Id, nombre, descripción, coste, imagen, tipos de objeto y acción de objeto los describe Items Engine; **Equip type**, la lista **Traits** (un atributo y una cantidad) y las clases que pueden llevarlo los añade Equipment. Un tipo que describen dos mods sigue siendo un solo formulario.
 
 - Los **textos** (`Name`, `Description`) se muestran como su clave de traducción y una línea por idioma del mod; se escriben en los archivos de localización del propio mod.
@@ -48,3 +50,7 @@ No se escribe nada en disco hasta que el autor pulse **Guardar** en el editor de
 2. **La lista de mods está vacía.** No hay ningún mod en el que escribir (solo se puede en mods instalados como carpetas; los empaquetados no).
 3. **Insertar dice que no hay ningún escenario abierto.** Abre uno antes en el editor de escenarios o usa Copiar.
 4. **Un campo es una caja de texto simple.** Su tipo de esquema es text o desconocido.
+
+## Campos adicionales
+
+`quests_base`, `skills_base` y `turn_battle_base` describen misiones, habilidades y estados. Los pasos de misión se editan como número y texto por idioma; tipos y acciones usan selectores. El campo de flag permite **self.**: `flag self.picked 1`. Un `self.` sin nombre es inválido; corrígelo antes de insertar.

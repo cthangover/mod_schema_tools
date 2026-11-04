@@ -13,6 +13,8 @@ Chọn mod ở trên, loại dữ liệu bên trái và một mục ở giữa; 
 
 ![Trình sửa dữ liệu: mod classic_rpg_pack, bên trái là các loại (rpg_tileset 10, Stats 11, Archetypes 3, Equipment slots 3, Items 20, Characters 5, Battle actions 7, Shops 1, Crafting station 1, Recipe 3), ở giữa là chín vật phẩm của mod với Iron sword được chọn, và bên phải là biểu mẫu: Id, Name và Description với văn bản ở cả bảy ngôn ngữ, Cost 30, Picture, Item types TargetUsed, Item action action/equip, Equip type sword và một đặc tính trên chỉ số Attack.](assets/data-editor-item.jpg)
 
+Hình trình sửa được chụp trước đây. Khóa `rpg_demo/` hoặc bảng `rpg_tileset` trong hình là của bản cũ; dùng khóa `rpg_plus/` và mô hình `rpg_object` hiện tại trong bài.
+
 Biểu mẫu gom trường của nhiều mod vào một: Id, tên, mô tả, giá, ảnh, kiểu vật phẩm và hành động vật phẩm do Items Engine mô tả; **Equip type**, danh sách **Traits** (một chỉ số, một lượng) và các lớp được phép mặc do Equipment thêm vào. Loại mà hai mod cùng mô tả vẫn chỉ có một biểu mẫu.
 
 - **Văn bản** (`Name`, `Description`) hiện dưới dạng khóa dịch của nó và một dòng cho mỗi ngôn ngữ của mod; chúng được ghi vào tệp bản địa hóa của chính mod.
@@ -48,3 +50,7 @@ Không có gì được ghi xuống đĩa cho tới khi tác giả nhấn **Lưu
 2. **Danh sách mod trống.** Không có mod nào ghi được (chỉ ghi được vào mod cài dưới dạng thư mục; mod đã đóng gói thì không).
 3. **Chèn báo chưa mở kịch bản nào.** Hãy mở một kịch bản trong trình sửa kịch bản trước, hoặc dùng Sao chép.
 4. **Một trường là ô văn bản thường.** Kiểu của nó trong lược đồ là text hoặc không rõ.
+
+## Trường bổ sung
+
+`quests_base`, `skills_base`, `turn_battle_base` mô tả nhiệm vụ, kỹ năng, trạng thái. Bước nhiệm vụ có số và văn bản từng ngôn ngữ; loại và hành động dùng bộ chọn. Trường cờ có **self.** để tạo `flag self.picked 1`. `self.` thiếu tên là sai; sửa trước khi chèn.

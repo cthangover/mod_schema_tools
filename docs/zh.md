@@ -13,6 +13,8 @@ Schema Tools 是给作者用的两个窗口，完全由各模组作为模式（�
 
 ![数据编辑器：模组 classic_rpg_pack，左侧是类型（rpg_tileset 10、Stats 11、Archetypes 3、Equipment slots 3、Items 20、Characters 5、Battle actions 7、Shops 1、Crafting station 1、Recipe 3），中间是它的九个物品，选中 Iron sword，右侧是表单：Id、Name 和 Description 各带七种语言的文本，Cost 30、Picture、Item types TargetUsed、Item action action/equip、Equip type sword，以及 Attack 属性上的一条特性。](assets/data-editor-item.jpg)
 
+编辑器插图来自较早的截图，其中的 `rpg_demo/` 键或 `rpg_tileset` 面板属于旧版。请使用正文中的当前 `rpg_plus/` 键与 `rpg_object` 模型。
+
 表单把几个模组的字段汇成一张：Id、名称、描述、价格、图片、物品类型和物品动作由 Items Engine 描述；**Equip type**、**Traits** 列表（一个属性、一个数值）以及允许穿戴它的职业由 Equipment 添加。两个模组描述同一个类型，仍然只有一张表单。
 
 - **文本**（`Name`、`Description`）按各自的翻译键显示，每种语言一行；它们写入模组自己的本地化文件。
@@ -48,3 +50,7 @@ Schema Tools 是给作者用的两个窗口，完全由各模组作为模式（�
 2. **模组列表是空的。** 没有可写的模组（只能写入以文件夹安装的模组；打包的不能写）。
 3. **插入时提示没有打开的剧本。** 先在剧本编辑器里打开一个，或者用复制。
 4. **某个字段是普通文本框。** 它在模式里的类型是 text 或未知。
+
+## 更多字段
+
+`quests_base`、`skills_base`、`turn_battle_base` 描述任务、技能及状态。任务步骤以编号和各语言文本编辑；类型与动作使用选择器。标志字段支持 **self.**，如 `flag self.picked 1`。只有 `self.` 而无名称是无效值，插入前应修正。
