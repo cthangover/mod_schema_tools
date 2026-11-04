@@ -13,6 +13,8 @@ Schema Tools — это два окна для авторов, целиком п
 
 ![Редактор данных: мод classic_rpg_pack, слева виды (rpg_tileset 10, Stats 11, Archetypes 3, Equipment slots 3, Items 20, Characters 5, Battle actions 7, Shops 1, Crafting station 1, Recipe 3), посередине девять его предметов с выбранным Iron sword, справа форма: Id, Name и Description с текстом на семи языках, Cost 30, Picture, Item types TargetUsed, Item action action/equip, Equip type sword и черта на характеристике Attack.](assets/data-editor-item.jpg)
 
+Иллюстрация редактора снята раньше: видимые на ней ключи `rpg_demo/` или палитра `rpg_tileset` исторические. Используйте текущие ключи `rpg_plus/` и модель `rpg_object`, описанные в тексте.
+
 Форма собирает поля нескольких модов в одну: Id, имя, описание, стоимость, картинку, типы предмета и действие предмета описывает Items Engine; **Equip type**, список **Traits** (характеристика и величина) и классы, которым можно носить вещь, добавляет Equipment. Вид, описанный двумя модами, остаётся одной формой.
 
 - **Тексты** (`Name`, `Description`) показываются как свой ключ перевода и строка на каждый язык мода; пишутся они в собственные файлы локализации мода.

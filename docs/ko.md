@@ -13,6 +13,8 @@ Schema Tools는 작성자용 창 두 개로, 모드들이 스키마로 담는 �
 
 ![데이터 에디터: 모드 classic_rpg_pack, 왼쪽에 종류(rpg_tileset 10, Stats 11, Archetypes 3, Equipment slots 3, Items 20, Characters 5, Battle actions 7, Shops 1, Crafting station 1, Recipe 3), 가운데에 그 아이템 아홉 개와 Iron sword 선택, 오른쪽에 양식: Id, Name, Description은 일곱 언어 각각의 텍스트, Cost 30, Picture, Item types TargetUsed, Item action action/equip, Equip type sword, Attack 스탯의 특성.](assets/data-editor-item.jpg)
 
+편집기 그림은 이전 캡처입니다. 보이는 `rpg_demo/` 키나 `rpg_tileset` 팔레트는 구버전이며 본문의 현재 `rpg_plus/` 키와 `rpg_object` 모델을 사용하세요.
+
 양식은 여러 모드의 필드를 하나로 모읍니다: Id, 이름, 설명, 가격, 그림, 아이템 종류와 아이템 행동은 Items Engine이 설명하고, **Equip type**, **Traits** 목록(스탯과 수치), 착용할 수 있는 클래스는 Equipment가 더합니다. 두 모드가 설명하는 종류라도 양식은 하나입니다.
 
 - **텍스트**(`Name`, `Description`)는 번역 키와 모드의 언어별 줄로 표시되며, 모드 자신의 로컬라이즈 파일에 기록됩니다.
@@ -48,3 +50,7 @@ Schema Tools는 작성자용 창 두 개로, 모드들이 스키마로 담는 �
 2. **모드 목록이 비어 있습니다.** 쓸 수 있는 모드가 없습니다(폴더로 설치된 모드에만 쓸 수 있고, 압축된 모드에는 쓸 수 없습니다).
 3. **넣기에서 시나리오가 열려 있지 않다고 합니다.** 먼저 시나리오 에디터에서 열거나 복사를 쓰세요.
 4. **필드가 평범한 텍스트 상자입니다.** 스키마상 유형이 text이거나 알 수 없습니다.
+
+## 추가 필드
+
+`quests_base`, `skills_base`, `turn_battle_base`가 퀘스트, 스킬, 상태를 정의합니다. 퀘스트 단계는 번호와 언어별 텍스트로 편집하며 유형과 액션은 선택기입니다. 플래그 필드의 **self.**로 `flag self.picked 1`을 만듭니다. 이름 없는 `self.`는 잘못된 값이므로 삽입 전에 고치세요.

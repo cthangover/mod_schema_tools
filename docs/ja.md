@@ -13,6 +13,8 @@ Schema Tools は作者向けの二つのウィンドウで、どちらも各 MOD
 
 ![データエディター: MOD classic_rpg_pack、左に種類（rpg_tileset 10、Stats 11、Archetypes 3、Equipment slots 3、Items 20、Characters 5、Battle actions 7、Shops 1、Crafting station 1、Recipe 3）、中央にその九つのアイテムと Iron sword の選択、右にフォーム: Id、Name、Description は七つの言語それぞれのテキスト、Cost 30、Picture、Item types TargetUsed、Item action action/equip、Equip type sword、Attack ステータス上の特性。](assets/data-editor-item.jpg)
 
+エディタの図は以前の撮影です。表示される `rpg_demo/` キーや `rpg_tileset` パレットは旧版のもので、本文の現行 `rpg_plus/` キーと `rpg_object` モデルを使ってください。
+
 フォームは複数の MOD のフィールドを一つにまとめます: Id、名前、説明、価格、画像、アイテムの種類とアイテムの行動は Items Engine が記述し、**Equip type**、**Traits** リスト（ステータスと量）、装備できるクラスは Equipment が足します。二つの MOD が記述する種類でも、フォームは一つです。
 
 - **テキスト**（`Name`、`Description`）は翻訳キーと MOD の言語ごとの行として表示され、MOD 自身のローカライズファイルに書き込まれます。
@@ -48,3 +50,7 @@ Schema Tools は作者向けの二つのウィンドウで、どちらも各 MOD
 2. **MOD の一覧が空。** 書き込める MOD がありません（フォルダーとしてインストールされた MOD にだけ書け、パッケージ済みには書けません）。
 3. **挿入で「シナリオが開いていない」と言われる。** 先にシナリオエディターで開くか、コピーを使ってください。
 4. **フィールドがただのテキストボックス。** スキーマ上の型が text か不明です。
+
+## 追加の項目
+
+`quests_base`、`skills_base`、`turn_battle_base` がクエスト、スキル、状態を記述します。クエスト段階は番号と各言語の文で編集し、種類やアクションは選択式です。フラグ欄の **self.** で `flag self.picked 1` を作れます。名前のない `self.` は無効なので挿入前に直してください。

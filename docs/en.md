@@ -13,6 +13,8 @@ Pick a mod at the top, a kind of data on the left and an entry in the middle; th
 
 ![The Data Editor: mod classic_rpg_pack, the kinds on the left (rpg_tileset 10, Stats 11, Archetypes 3, Equipment slots 3, Items 20, Characters 5, Battle actions 7, Shops 1, Crafting station 1, Recipe 3), its nine items in the middle with Iron sword selected, and the form on the right: Id, Name and Description with a text in each of seven languages, Cost 30, Picture, Item types TargetUsed, Item action action/equip, Equip type sword and a trait on the stat Attack.](assets/data-editor-item.jpg)
 
+The editor illustration is from an earlier capture. Legacy `rpg_demo/` keys or an `rpg_tileset` palette visible in it are historical; use the current `rpg_plus/` keys and `rpg_object` model described in the text.
+
 The form gathers the fields of several mods into one: Id, name, description, cost, picture, item types and item action are described by Items Engine; **Equip type**, the **Traits** list (a stat, an amount) and the classes allowed to wear it are added by Equipment. A kind that two mods describe is still one form.
 
 - **Texts** (`Name`, `Description`) are shown as their translation key and a line per language of the mod; they are written into the mod's own locale files.
