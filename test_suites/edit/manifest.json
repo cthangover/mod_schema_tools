@@ -5,7 +5,7 @@
     "src/*.cs"
   ],
   "depends": [
-    "rpg_plus_game>=1",
+    "rpg_plus_game>=0.1.0",
     "scenario_editor>=1",
     "skills_base>=1",
     "turn_battle_base>=1",
