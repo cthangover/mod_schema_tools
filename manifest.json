@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "author": "ct",
   "description": "The Data Editor window and the command palette: edit any described entity in a form and assemble checked scenario lines from the mods' schemas.",
-  "category": "tools, editor",
+  "categories": ["tools", "editor"],
   "sources": [
     "src/**/*.cs"
   ],
