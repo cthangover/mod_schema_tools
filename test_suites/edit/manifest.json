@@ -6,9 +6,9 @@
   ],
   "depends": [
     "rpg_plus_game>=0.1.0",
-    "scenario_editor>=1",
-    "skills_base>=1",
-    "turn_battle_base>=1",
-    "quests_base>=1"
+    "scenario_editor>=0.1.0",
+    "skills_base>=0.1.0",
+    "turn_battle_base>=0.1.0",
+    "quests_base>=0.1.0"
   ]
 }
