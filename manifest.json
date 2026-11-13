@@ -1,7 +1,7 @@
 {
   "id": "schema_tools",
   "name": "Schema Tools",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "author": "ct",
   "description": "The Data Editor window and the command palette: edit any described entity in a form and assemble checked scenario lines from the mods' schemas.",
   "category": "tools, editor",
@@ -12,9 +12,9 @@
     "tests/*.cs"
   ],
   "depends": [
-    "tools_base>=1",
-    "ui_base>=1",
-    "schema_base>=1"
+    "tools_base>=0.1.0",
+    "ui_base>=0.1.0",
+    "schema_base>=0.1.0"
   ],
   "test_suites": [
     {
